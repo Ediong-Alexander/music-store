@@ -1,0 +1,60 @@
+//Question 1: Who are the top selling Artists?
+
+SELECT Artist_name, SUM(Total_purchase) as Artists_total
+FROM
+(SELECT 
+Artist.Name AS Artist_name, 
+Album.Title, 
+Track.Name AS Track_name, 
+SUM(InvoiceLine.UnitPrice * InvoiceLine.Quantity) AS Total_purchase
+FROM Artist
+JOIN Album
+ON Artist.ArtistId = Album.ArtistId
+JOIN Track
+ON ALbum.AlbumId = Track.AlbumId
+JOIN InvoiceLine
+ON Track.TrackId = InvoiceLine.TrackId
+GROUP BY Track.Name) AS sub
+GROUP BY Artist_name
+ORDER BY Artists_total DESC;
+
+Question 2: What are the top selling genres?
+
+SELECT Genre.Name AS Genre_name, ROUND(SUM(InvoiceLine.UnitPrice * InvoiceLine.Quantity),2) as Total_sales
+FROM Genre
+JOIN Track
+ON Genre.GenreId = Track.GenreId
+JOIN InvoiceLine
+ON Track.TrackId = InvoiceLine.TrackId
+GROUP BY Genre.Name
+ORDER BY Total_sales DESC
+LIMIT 10;
+
+Question 3: Where is Hip Hop/Rap popular?
+
+SELECT BillingCountry AS Country, Count(*) AS count
+FROM Track
+JOIN Genre
+ON Track.GenreId = Genre.GenreId
+JOIN InvoiceLine
+ON InvoiceLine.TrackId = Track.TrackId
+JOIN Invoice
+ON InvoiceLine.InvoiceId = Invoice.InvoiceId
+WHERE Genre.Name = 'Hip Hop/Rap'
+GROUP BY BillingCountry
+ORDER BY count DESC;
+
+Question 4: How has Rock, Metal and Jazz genre sales increased over time?
+
+SELECT STRFTIME('%Y',InvoiceDate) AS date, 
+    SUM(CASE WHEN Genre.Name = 'Rock' THEN 1 ELSE 0 END) AS 'Num of Rock sales',
+    SUM(CASE WHEN Genre.Name = 'Metal' THEN 1 ELSE 0 END) AS 'Num of Metal sales',
+    SUM(CASE WHEN Genre.Name = 'Jazz' THEN 1 ELSE 0 END) AS 'Num of Jazz sales'
+FROM Track
+JOIN Genre
+ON Track.GenreId = Genre.GenreId
+JOIN InvoiceLine
+ON Track.TrackId = InvoiceLine.TrackId
+JOIN Invoice
+ON InvoiceLine.InvoiceId = Invoice.InvoiceId
+GROUP BY date;
